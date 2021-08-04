@@ -1,12 +1,13 @@
 use crate::MyErrors;
 use csv::Writer;
+use serde::Serialize;
 
 #[derive(Debug)]
 pub struct Accounts {
     accounts: Vec<Account>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Account {
     client: u16,
     pub available: f64,
