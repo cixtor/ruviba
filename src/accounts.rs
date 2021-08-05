@@ -22,4 +22,14 @@ impl Accounts {
             accounts: Vec::new(),
         };
     }
+
+    pub fn create(&mut self, client_id: u16, amount: f64) {
+        self.accounts.push(Account {
+            client: client_id,
+            available: amount,
+            held: f64::default(),
+            total: amount,
+            locked: false,
+        });
+    }
 }
