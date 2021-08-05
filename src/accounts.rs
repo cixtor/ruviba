@@ -32,4 +32,12 @@ impl Accounts {
             locked: false,
         });
     }
+
+    pub fn find(&mut self, client_id: u16) -> Result<&mut Account, MyErrors> {
+        let account = match self.accounts.iter_mut().find(|x| x.client == client_id) {
+            Some(value) => value,
+            None => return Err(MyErrors::AccountDoesNotExist),
+        };
+        Ok(account)
+    }
 }
