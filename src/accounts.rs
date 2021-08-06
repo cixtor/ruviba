@@ -40,4 +40,20 @@ impl Accounts {
         };
         Ok(account)
     }
+
+    pub fn find_in_dispute(
+        &mut self,
+        client_id: u16,
+        client_id_in_dispute: u16,
+    ) -> Result<&mut Account, MyErrors> {
+        let account = match self
+            .accounts
+            .iter_mut()
+            .find(|x| x.client == client_id && x.client == client_id_in_dispute)
+        {
+            Some(value) => value,
+            None => return Err(MyErrors::AccountDoesNotExist),
+        };
+        Ok(account)
+    }
 }
