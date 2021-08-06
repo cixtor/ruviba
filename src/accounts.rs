@@ -56,4 +56,18 @@ impl Accounts {
         };
         Ok(account)
     }
+
+    pub fn deposit(&mut self, client_id: u16, amount: f64) {
+        match self.accounts.iter_mut().find(|x| x.client == client_id) {
+            Some(acc) => {
+                // Account already exists; modify its balance.
+                acc.available = acc.available + amount;
+                acc.total = acc.total + amount;
+            }
+            None => {
+                // Account does not exist; create a new one.
+                self.create(client_id, amount);
+            }
+        };
+    }
 }
