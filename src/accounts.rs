@@ -70,4 +70,14 @@ impl Accounts {
             }
         };
     }
+
+    pub fn print(&self) -> Result<(), MyErrors> {
+        let mut w = Writer::from_writer(std::io::stdout());
+        for item in self.accounts.as_slice() {
+            if let Err(_) = w.serialize(item) {
+                return Err(MyErrors::CannotSerializeAccount);
+            }
+        }
+        Ok(())
+    }
 }
