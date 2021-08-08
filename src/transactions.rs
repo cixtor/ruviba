@@ -30,3 +30,9 @@ pub enum TransactionType {
     #[serde(alias = "chargeback")]
     Chargeback,
 }
+
+impl Transactions {
+    pub fn new() -> Transactions {
+        return Transactions { txns: Vec::new() };
+    }
+}
