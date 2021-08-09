@@ -35,4 +35,8 @@ impl Transactions {
     pub fn new() -> Transactions {
         return Transactions { txns: Vec::new() };
     }
+
+    pub fn remember(&mut self, txn: Transaction) {
+        self.txns.push(txn);
+    }
 }
