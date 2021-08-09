@@ -1,3 +1,4 @@
+use crate::MyErrors;
 use serde::Deserialize;
 
 #[derive(Debug)]
@@ -38,5 +39,13 @@ impl Transactions {
 
     pub fn remember(&mut self, txn: Transaction) {
         self.txns.push(txn);
+    }
+
+    pub fn find(&mut self, txn_id: u32) -> Result<&mut Transaction, MyErrors> {
+        let txn = match self.txns.iter_mut().find(|x| x.tx_id == txn_id) {
+            Some(value) => value,
+            None => return Err(MyErrors::DisputeTransactionDoesNotExist),
+        };
+        Ok(txn)
     }
 }
