@@ -53,3 +53,13 @@ impl Transactions {
         self.txns.last().expect("empty transaction history")
     }
 }
+
+impl Transaction {
+    pub fn read_amount(&self) -> Result<f64, MyErrors> {
+        let amount = match self.amount {
+            Some(value) => value,
+            None => return Err(MyErrors::TransactionAmountIsNone),
+        };
+        Ok(amount)
+    }
+}

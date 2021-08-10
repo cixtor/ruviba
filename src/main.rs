@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub enum MyErrors {
     AccountDoesNotExist,
+    TransactionAmountIsNone,
     DisputeTransactionDoesNotExist,
     CannotSerializeAccount,
 }
