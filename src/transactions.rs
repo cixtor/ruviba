@@ -48,4 +48,8 @@ impl Transactions {
         };
         Ok(txn)
     }
+
+    pub fn last(&self) -> &Transaction {
+        self.txns.last().expect("empty transaction history")
+    }
 }
