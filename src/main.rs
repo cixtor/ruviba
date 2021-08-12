@@ -20,3 +20,9 @@ fn main() -> Result<(), MyErrors> {
 
     Ok(())
 }
+
+fn deposit(accounts: &mut Accounts, txn: Transaction) -> Result<(), MyErrors> {
+    let amount = txn.read_amount()?;
+    accounts.deposit(txn.client, amount);
+    Ok(())
+}
