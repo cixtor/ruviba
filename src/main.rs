@@ -1,13 +1,23 @@
 use std::env::args;
 use std::error::Error;
 
+mod accounts;
+mod transactions;
+
+use accounts::Accounts;
+use transactions::Transaction;
+use transactions::TransactionType;
+use transactions::Transactions;
+
 #[derive(Debug)]
 pub enum MyErrors {
     NotEnoughArguments,
     AccountDoesNotExist,
     TransactionAmountIsNone,
     CannotWithdrawMoreThanBalance,
+    TransactionIsAlreadyInDispute,
     DisputeTransactionDoesNotExist,
+    CannotDisputeThisTransactionType,
     CannotSerializeAccount,
 }
 
@@ -38,5 +48,36 @@ fn withdraw(accounts: &mut Accounts, txn: Transaction) -> Result<(), MyErrors> {
 
     account.available = account.available - amount;
     account.total = account.total - amount;
+    Ok(())
+}
+
+fn dispute(
+    accounts: &mut Accounts,
+    txn: Transaction,
+    txns: &mut Transactions,
+) -> Result<(), MyErrors> {
+    let target = txns.find(txn.tx_id)?;
+    let amount = target.read_amount()?;
+
+    if target.in_dispute {
+        return Err(MyErrors::TransactionIsAlreadyInDispute);
+    }
+
+    let account = accounts.find_in_dispute(txn.client, target.client)?;
+
+    match target.tx_type {
+        TransactionType::Deposit => {
+            account.available = account.available - amount;
+            account.held = account.held + amount;
+        }
+        TransactionType::Withdraw => {
+            account.held = account.held + amount;
+            account.total = account.total + amount;
+        }
+        _ => return Err(MyErrors::CannotDisputeThisTransactionType),
+    }
+
+    target.in_dispute = true;
+
     Ok(())
 }
