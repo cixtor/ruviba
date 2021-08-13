@@ -6,6 +6,7 @@ pub enum MyErrors {
     NotEnoughArguments,
     AccountDoesNotExist,
     TransactionAmountIsNone,
+    CannotWithdrawMoreThanBalance,
     DisputeTransactionDoesNotExist,
     CannotSerializeAccount,
 }
@@ -24,5 +25,18 @@ fn main() -> Result<(), MyErrors> {
 fn deposit(accounts: &mut Accounts, txn: Transaction) -> Result<(), MyErrors> {
     let amount = txn.read_amount()?;
     accounts.deposit(txn.client, amount);
+    Ok(())
+}
+
+fn withdraw(accounts: &mut Accounts, txn: Transaction) -> Result<(), MyErrors> {
+    let amount = txn.read_amount()?;
+    let account = accounts.find(txn.client)?;
+
+    if amount > account.available {
+        return Err(MyErrors::CannotWithdrawMoreThanBalance);
+    }
+
+    account.available = account.available - amount;
+    account.total = account.total - amount;
     Ok(())
 }
