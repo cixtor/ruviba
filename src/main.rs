@@ -19,6 +19,7 @@ pub enum MyErrors {
     DisputeTransactionDoesNotExist,
     CannotDisputeThisTransactionType,
     CannotResolveThisTransactionType,
+    CannotChargebackThisTransactionType,
     TransactionIsNotInDispute,
     CannotSerializeAccount,
 }
@@ -108,6 +109,39 @@ fn resolve(
             account.available = account.available + amount;
         }
         _ => return Err(MyErrors::CannotResolveThisTransactionType),
+    };
+
+    target.in_dispute = false;
+
+    Ok(())
+}
+
+fn chargeback(
+    accounts: &mut Accounts,
+    txn: Transaction,
+    txns: &mut Transactions,
+) -> Result<(), MyErrors> {
+    let target = txns.find(txn.tx_id)?;
+    let amount = target.read_amount()?;
+
+    if !target.in_dispute {
+        return Err(MyErrors::TransactionIsNotInDispute);
+    }
+
+    let account = accounts.find_in_dispute(txn.client, target.client)?;
+
+    match target.tx_type {
+        TransactionType::Deposit => {
+            account.held = account.held - amount;
+            account.total = account.total - amount;
+            account.locked = true;
+        }
+        TransactionType::Withdraw => {
+            account.held = account.held - amount;
+            account.total = account.total - amount;
+            account.locked = true;
+        }
+        _ => return Err(MyErrors::CannotChargebackThisTransactionType),
     };
 
     target.in_dispute = false;
