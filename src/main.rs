@@ -18,6 +18,8 @@ pub enum MyErrors {
     TransactionIsAlreadyInDispute,
     DisputeTransactionDoesNotExist,
     CannotDisputeThisTransactionType,
+    CannotResolveThisTransactionType,
+    TransactionIsNotInDispute,
     CannotSerializeAccount,
 }
 
@@ -78,6 +80,37 @@ fn dispute(
     }
 
     target.in_dispute = true;
+
+    Ok(())
+}
+
+fn resolve(
+    accounts: &mut Accounts,
+    txn: Transaction,
+    txns: &mut Transactions,
+) -> Result<(), MyErrors> {
+    let target = txns.find(txn.tx_id)?;
+    let amount = target.read_amount()?;
+
+    if !target.in_dispute {
+        return Err(MyErrors::TransactionIsNotInDispute);
+    }
+
+    let account = accounts.find_in_dispute(txn.client, target.client)?;
+
+    match target.tx_type {
+        TransactionType::Deposit => {
+            account.available = account.available + amount;
+            account.held = account.held - amount;
+        }
+        TransactionType::Withdraw => {
+            account.held = account.held - amount;
+            account.available = account.available + amount;
+        }
+        _ => return Err(MyErrors::CannotResolveThisTransactionType),
+    };
+
+    target.in_dispute = false;
 
     Ok(())
 }
