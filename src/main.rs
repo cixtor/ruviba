@@ -30,7 +30,10 @@ fn main() -> Result<(), MyErrors> {
         None => return Err(MyErrors::NotEnoughArguments),
     };
 
-    println!("{}", filename);
+    if let Err(err) = process_txns(filename) {
+        println!("{}", err);
+        std::process::exit(1);
+    }
 
     Ok(())
 }
