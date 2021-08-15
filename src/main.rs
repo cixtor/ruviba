@@ -35,6 +35,36 @@ fn main() -> Result<(), MyErrors> {
     Ok(())
 }
 
+fn process_txns(filename: String) -> Result<(), Box<dyn Error>> {
+    let mut txns = Transactions::new();
+    let mut accounts = Accounts::new();
+    let mut reader = csv::Reader::from_path(filename)?;
+
+    for result in reader.deserialize() {
+        let txn: Transaction = result?;
+
+        txns.remember(txn.clone());
+
+        let res = match txn.tx_type {
+            TransactionType::Deposit => deposit(&mut accounts, txn),
+            TransactionType::Withdraw => withdraw(&mut accounts, txn),
+            TransactionType::Dispute => dispute(&mut accounts, txn, &mut txns),
+            TransactionType::Resolve => resolve(&mut accounts, txn, &mut txns),
+            TransactionType::Chargeback => chargeback(&mut accounts, txn, &mut txns),
+        };
+
+        if let Err(err) = res {
+            eprintln!("{:?} w/ {:?}", err, txns.last());
+        }
+    }
+
+    if let Err(err) = accounts.print() {
+        println!("{:?}", err);
+    }
+
+    Ok(())
+}
+
 fn deposit(accounts: &mut Accounts, txn: Transaction) -> Result<(), MyErrors> {
     let amount = txn.read_amount()?;
     accounts.deposit(txn.client, amount);
